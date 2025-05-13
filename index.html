@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>麦满婚接亲大作战❤️</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" as="style">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap');
+        
+        :root {
+            --main-color: #ff69b4;
+            --heart-color: #ff1493;
+        }
+
+        body {
+            background: url('bg.jpg') center/cover fixed;
+            font-family: 'Ma Shan Zheng', cursive, '微软雅黑';
+            color: var(--main-color);
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+            position: relative;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.3em;
+            text-shadow: 2px 2px 4px rgba(255,105,180,0.5);
+            margin: 15px 0;
+            color: var(--heart-color);
+            position: relative;
+            padding: 0 40px;
+        }
+
+        h1::before,
+        h1::after {
+            content: '❤';
+            position: absolute;
+            font-size: 1.2em;
+            animation: heartbeat 1.2s infinite;
+        }
+
+        h1::before { left: 10px; }
+        h1::after { right: 10px; }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #ff85c0;
+            border: 2px solid #ffffff;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            color: white;
+            font-family: inherit;
+            min-width: 120px;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .result-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+            padding: 10px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            width: 80px;
+            height: 120px;
+            perspective: 800px;
+            position: relative;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .card-back {
+            background: url('card-back.png') center/cover;
+            transform: rotateY(0deg);
+        }
+
+        .card-front {
+            background: white;
+            transform: rotateY(180deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .card-front img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 稀有度标识 */
+        .card-front::before {
+            content: 'R';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-family: Arial;
+        }
+        
+        .sr::before { content: 'SR'; background: rgba(192,192,192,0.9); }
+        .ssr::before { content: 'SSR'; background: rgba(255,215,0,0.9); }
+
+        /* 稀有度边框 */
+        .ssr { border: 3px solid #ffd700; }
+        .sr { border: 3px solid #c0c0c0; }
+        .r { border: 3px solid #cd7f32; }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8em;
+                padding: 0 30px;
+            }
+            
+            button {
+                padding: 10px 20px;
+                font-size: 0.9em;
+                min-width: 110px;
+            }
+            
+            .card {
+                width: 70px;
+                height: 105px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>麦满婚接亲大作战</h1>
+        <div class="buttons">
+            <button onclick="drawCard(1)">单抽姻缘</button>
+            <button onclick="drawCard(10)">十连同心</button>
+            <button onclick="navigateHistory(-1)">上一把</button>
+            <button onclick="navigateHistory(1)">下一把</button>
+        </div>
+        <div class="result-container" id="results"></div>
+    </div>
+
+    <script>
+        // 概率配置
+        const config = {
+            baseRate: { ssr: 2, sr: 23, r: 75 }, // 基础概率
+            pitySystem: {
+                guaranteeCount: 50,    // 保底次数
+                currentCount: 0        // 当前计数
+            }
+        };
+
+        // 卡牌配置
+        const cards = {
+            ssr: Array(5).fill().map((_,i) => `images/ssr${i+1}.jpg`),
+            sr: Array(25).fill().map((_,i) => `images/sr${i+1}.jpg`),
+            r: Array(30).fill().map((_,i) => `images/r${i+1}.jpg`)
+        };
+
+        // 抽卡历史记录
+        let drawHistory = [];
+        let currentIndex = -1;
+
+        // 抽卡核心逻辑
+        function drawCard(times) {
+            const container = document.getElementById('results');
+            container.innerHTML = '';
+            
+            const result = [];
+            for(let i = 0; i < times; i++){
+                result.push(singleDraw());
+            }
+            
+            // 更新历史记录
+            drawHistory = drawHistory.slice(0, currentIndex + 1);
+            drawHistory.push(result);
+            currentIndex = drawHistory.length - 1;
+            
+            showResults(result);
+        }
+
+        // 单次抽卡逻辑
+        function singleDraw() {
+            config.pitySystem.currentCount++;
+            
+            // 保底触发检测
+            if(config.pitySystem.currentCount >= config.pitySystem.guaranteeCount) {
+                config.pitySystem.currentCount = 0;
+                return getSSR();
+            }
+
+            const rand = Math.random() * 100;
+            if(rand < config.baseRate.ssr) {
+                config.pitySystem.currentCount = 0;
+                return getSSR();
+            }
+            if(rand < config.baseRate.ssr + config.baseRate.sr) {
+                return getSR();
+            }
+            return getR();
+        }
+
+        // 获取各稀有度卡牌
+        function getSSR() {
+            return {
+                type: 'ssr',
+                img: cards.ssr[Math.floor(Math.random() * cards.ssr.length)]
+            };
+        }
+
+        function getSR() {
+            return {
+                type: 'sr',
+                img: cards.sr[Math.floor(Math.random() * cards.sr.length)]
+            };
+        }
+
+        function getR() {
+            return {
+                type: 'r',
+                img: cards.r[Math.floor(Math.random() * cards.r.length)]
+            };
+        }
+
+        // 显示结果
+        function showResults(results) {
+            const container = document.getElementById('results');
+            container.innerHTML = '';
+            
+            results.forEach((result, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-back"></div>
+                        <div class="card-front ${result.type}">
+                            <img src="${result.img}" alt="姻缘卡" loading="lazy">
+                        </div>
+                    </div>
+                `;
+                
+                setTimeout(() => card.classList.add('flipped'), index * 50);
+                container.appendChild(card);
+            });
+        }
+
+        // 历史记录导航
+        function navigateHistory(step) {
+            currentIndex = Math.max(0, Math.min(drawHistory.length -1, currentIndex + step));
+            showResults(drawHistory[currentIndex]);
+        }
+    </script>
+</body>
+</html>
