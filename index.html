@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>麦满婚接亲大作战❤️</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap');
+        
+        :root {
+            --main-pink: #ff69b4;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+        }
+
+        body {
+            background: url('bg.webp') center/cover fixed;
+            font-family: 'Ma Shan Zheng', cursive;
+            color: var(--main-pink);
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: clamp(1.8rem, 5vw, 2.3rem);
+            margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(255,105,180,0.5);
+            position: relative;
+        }
+
+        h1::before, h1::after {
+            content: '❤';
+            position: absolute;
+            animation: heartbeat 1.2s infinite;
+        }
+        h1::before { left: -25px; }
+        h1::after { right: -25px; }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #ff85c0;
+            border: 2px solid white;
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 120px;
+            font-family: inherit;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+            padding: 10px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            width: 80px;
+            height: 120px;
+            perspective: 800px;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card-back {
+            background: url('card-back.webp') center/cover;
+        }
+
+        .card-front {
+            background: white;
+            transform: rotateY(180deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 稀有度标识 */
+        .rarity-badge {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .ssr .rarity-badge { background: var(--gold); }
+        .sr .rarity-badge { background: var(--silver); }
+        .r .rarity-badge { background: var(--bronze); }
+
+        /* 动画 */
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 480px) {
+            .card {
+                width: 70px;
+                height: 105px;
+            }
+            button {
+                padding: 10px 15px;
+                min-width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>麦满婚接亲大作战</h1>
+        <div class="buttons">
+            <button onclick="drawCard(1)">单抽姻缘</button>
+            <button onclick="drawCard(10)">十连同心</button>
+        </div>
+        <div class="cards-grid" id="cardsContainer"></div>
+    </div>
+
+    <script>
+        // 卡牌配置
+        const cardConfig = {
+            ssr: {
+                count: 5,
+                probability: 2 // 2%
+            },
+            sr: {
+                count: 25,
+                probability: 23 // 23%
+            },
+            r: {
+                count: 30,
+                probability: 75 // 75%
+            },
+            pity: {
+                guarantee: 50, // 保底次数
+                counter: 0
+            }
+        };
+
+        // 生成图片路径
+        function getImagePath(type, index) {
+            return `images/${type}${index}.webp`;
+        }
+
+        // 抽卡逻辑
+        function drawCard(times) {
+            const results = [];
+            for (let i = 0; i < times; i++) {
+                results.push(generateCard());
+            }
+            displayResults(results);
+        }
+
+        function generateCard() {
+            cardConfig.pity.counter++;
+            
+            // 保底检测
+            if (cardConfig.pity.counter >= cardConfig.pity.guarantee) {
+                cardConfig.pity.counter = 0;
+                return createCard('ssr');
+            }
+
+            const rand = Math.random() * 100;
+            if (rand < cardConfig.ssr.probability) {
+                cardConfig.pity.counter = 0;
+                return createCard('ssr');
+            } else if (rand < cardConfig.ssr.probability + cardConfig.sr.probability) {
+                return createCard('sr');
+            } else {
+                return createCard('r');
+            }
+        }
+
+        function createCard(type) {
+            const index = Math.floor(Math.random() * cardConfig[type].count) + 1;
+            return {
+                type: type,
+                img: getImagePath(type, index)
+            };
+        }
+
+        // 显示结果
+        function displayResults(cards) {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+
+            cards.forEach((card, i) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-face card-back"></div>
+                        <div class="card-face card-front ${card.type}">
+                            <img src="${card.img}" class="card-img" loading="lazy">
+                            <div class="rarity-badge">${card.type.toUpperCase()}</div>
+                        </div>
+                    </div>
+                `;
+                
+                // 延迟翻转动画
+                setTimeout(() => {
+                    cardEl.classList.add('flipped');
+                }, i * 100);
+                
+                container.appendChild(cardEl);
+            });
+        }
+    </script>
+</body>
+</html>
