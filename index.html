@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>麦满婚接亲大作战❤️</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap');
         
@@ -20,70 +19,79 @@
             font-family: 'Ma Shan Zheng', cursive;
             color: var(--main-pink);
             margin: 0;
-            padding: 10px;
+            padding: 0;
             min-height: 100vh;
             overflow-x: hidden;
         }
 
         .container {
-            max-width: 100%;
-            margin: 0 auto;
-            text-align: center;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         h1 {
-            font-size: clamp(1.8rem, 5vw, 2.3rem);
-            margin: 15px 0;
+            font-size: clamp(1.8rem, 6vmin, 2.5rem);
+            margin: 2vmin 0;
             text-shadow: 2px 2px 4px rgba(255,105,180,0.5);
-            position: relative;
+            position: fixed;
+            top: 2vmin;
+            z-index: 100;
         }
-
-        h1::before, h1::after {
-            content: '❤';
-            position: absolute;
-            animation: heartbeat 1.2s infinite;
-        }
-        h1::before { left: -25px; }
-        h1::after { right: -25px; }
 
         .buttons {
+            position: fixed;
+            bottom: 5vmin;
             display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
-            flex-wrap: wrap;
+            gap: 3vmin;
+            z-index: 100;
         }
 
         button {
-            background: #ff85c0;
+            background: #ff85c0dd;
             border: 2px solid white;
-            border-radius: 25px;
-            padding: 12px 20px;
-            font-size: 1rem;
+            border-radius: 5vmin;
+            padding: 2vmin 4vmin;
+            font-size: clamp(1rem, 3vmin, 1.2rem);
             color: white;
             cursor: pointer;
             transition: all 0.2s;
-            min-width: 120px;
-            font-family: inherit;
+            backdrop-filter: blur(5px);
         }
 
-        button:active {
-            transform: scale(0.95);
-        }
-
-        .cards-grid {
+        /* 卡片容器 */
+        .cards-container {
+            width: 100%;
+            height: 100%;
+            padding: 5vmin;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 8px;
-            padding: 10px;
-            max-width: 400px;
-            margin: 0 auto;
+            place-items: center;
+        }
+
+        /* 单卡全屏样式 */
+        .single-card {
+            width: 90vmin;
+            height: 135vmin;
+            max-width: 90%;
+            max-height: 80vh;
+            perspective: 200vmin;
+        }
+
+        /* 十连抽布局 */
+        .multi-cards {
+            grid-template-columns: repeat(auto-fit, minmax(30vmin, 1fr));
+            gap: 3vmin;
+            padding: 5vmin;
         }
 
         .card {
-            width: 80px;
-            height: 120px;
-            perspective: 800px;
+            width: 100%;
+            height: 100%;
+            perspective: 100vmin;
+            position: relative;
         }
 
         .card-inner {
@@ -91,7 +99,6 @@
             height: 100%;
             transition: transform 0.6s;
             transform-style: preserve-3d;
-            position: relative;
         }
 
         .card.flipped .card-inner {
@@ -103,9 +110,9 @@
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
-            border-radius: 8px;
+            border-radius: 3vmin;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2vmin 4vmin rgba(0,0,0,0.2);
         }
 
         .card-back {
@@ -126,71 +133,50 @@
             object-fit: cover;
         }
 
-        /* 稀有度标识 */
         .rarity-badge {
             position: absolute;
-            top: 5px;
-            left: 5px;
+            top: 2vmin;
+            left: 2vmin;
             color: white;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 0.7rem;
+            padding: 1vmin 2vmin;
+            border-radius: 1vmin;
+            font-size: 4vmin;
             font-weight: bold;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            text-shadow: 0 0.5vmin 1vmin rgba(0,0,0,0.5);
         }
 
-        .ssr .rarity-badge { background: var(--gold); }
-        .sr .rarity-badge { background: var(--silver); }
-        .r .rarity-badge { background: var(--bronze); }
+        .SSR { border: 1vmin solid var(--gold); }
+        .SR { border: 1vmin solid var(--silver); }
+        .R { border: 1vmin solid var(--bronze); }
+
+        .SSR .rarity-badge { background: var(--gold); }
+        .SR .rarity-badge { background: var(--silver); }
+        .R .rarity-badge { background: var(--bronze); }
 
         /* 动画 */
-        @keyframes heartbeat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-
-        /* 移动端优化 */
-        @media (max-width: 480px) {
-            .card {
-                width: 70px;
-                height: 105px;
-            }
-            button {
-                padding: 10px 15px;
-                min-width: 100px;
-            }
+        @keyframes cardAppear {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>麦满婚接亲大作战</h1>
+        <h1>❤️麦满婚接亲大作战❤️</h1>
         <div class="buttons">
             <button onclick="drawCard(1)">单抽姻缘</button>
             <button onclick="drawCard(10)">十连同心</button>
         </div>
-        <div class="cards-grid" id="cardsContainer"></div>
+        <div class="cards-container" id="cardsContainer"></div>
     </div>
 
     <script>
         // 卡牌配置
         const cardConfig = {
-            ssr: {
-                count: 5,
-                probability: 2 // 2%
-            },
-            sr: {
-                count: 25,
-                probability: 23 // 23%
-            },
-            r: {
-                count: 30,
-                probability: 75 // 75%
-            },
-            pity: {
-                guarantee: 50, // 保底次数
-                counter: 0
-            }
+            SSR: { count: 5, probability: 2 },
+            SR: { count: 25, probability: 23 },
+            R: { count: 30, probability: 75 },
+            pity: { guarantee: 50, counter: 0 }
         };
 
         // 生成图片路径
@@ -200,30 +186,36 @@
 
         // 抽卡逻辑
         function drawCard(times) {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+            
+            // 设置布局模式
+            container.className = times === 1 ? 'cards-container single-card' : 'cards-container multi-cards';
+            
             const results = [];
             for (let i = 0; i < times; i++) {
                 results.push(generateCard());
             }
-            displayResults(results);
+            
+            displayResults(results, times);
         }
 
         function generateCard() {
             cardConfig.pity.counter++;
             
-            // 保底检测
             if (cardConfig.pity.counter >= cardConfig.pity.guarantee) {
                 cardConfig.pity.counter = 0;
-                return createCard('ssr');
+                return createCard('SSR');
             }
 
             const rand = Math.random() * 100;
-            if (rand < cardConfig.ssr.probability) {
+            if (rand < cardConfig.SSR.probability) {
                 cardConfig.pity.counter = 0;
-                return createCard('ssr');
-            } else if (rand < cardConfig.ssr.probability + cardConfig.sr.probability) {
-                return createCard('sr');
+                return createCard('SSR');
+            } else if (rand < cardConfig.SSR.probability + cardConfig.SR.probability) {
+                return createCard('SR');
             } else {
-                return createCard('r');
+                return createCard('R');
             }
         }
 
@@ -236,29 +228,29 @@
         }
 
         // 显示结果
-        function displayResults(cards) {
+        function displayResults(cards, count) {
             const container = document.getElementById('cardsContainer');
-            container.innerHTML = '';
-
+            
             cards.forEach((card, i) => {
                 const cardEl = document.createElement('div');
                 cardEl.className = 'card';
+                cardEl.style.animation = `cardAppear 0.5s ${i*0.1}s both`;
+                
                 cardEl.innerHTML = `
                     <div class="card-inner">
                         <div class="card-face card-back"></div>
                         <div class="card-face card-front ${card.type}">
                             <img src="${card.img}" class="card-img" loading="lazy">
-                            <div class="rarity-badge">${card.type.toUpperCase()}</div>
+                            <div class="rarity-badge">${card.type}</div>
                         </div>
                     </div>
                 `;
                 
-                // 延迟翻转动画
+                container.appendChild(cardEl);
+                
                 setTimeout(() => {
                     cardEl.classList.add('flipped');
-                }, i * 100);
-                
-                container.appendChild(cardEl);
+                }, 500 + i * 100);
             });
         }
     </script>
